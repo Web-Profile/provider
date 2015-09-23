@@ -38,12 +38,12 @@ var SampleApp = function() {
      *  Populate the cache.
      */
     self.populateCache = function() {
-        if (typeof self.zcache === "undefined") {
-            self.zcache = { 'index.html': '' };
-        }
+        var cache = self.pageCache = self.pageCache || {
+          'index.html': '',
+          '.well-known/web-profile.html': ''
+        };
 
-        //  Local cache for static content.
-        self.zcache['index.html'] = fs.readFileSync('./index.html');
+        for (var z in cache) cache[z] = fs.readFileSync('./' + z);
     };
 
 
@@ -51,7 +51,7 @@ var SampleApp = function() {
      *  Retrieve entry (content) from cache.
      *  @param {string} key  Key identifying content to retrieve from cache.
      */
-    self.cache_get = function(key) { return self.zcache[key]; };
+    self.cache_get = function(key) { return self.pageCache[key]; };
 
 
     /**
@@ -93,16 +93,15 @@ var SampleApp = function() {
      *  Create the routing table entries + handlers for the application.
      */
     self.createRoutes = function() {
-        self.routes = { };
-
-        self.routes['/asciimo'] = function(req, res) {
-            var link = "http://i.imgur.com/kmbjB.png";
-            res.send("<html><body><img src='" + link + "'></body></html>");
-        };
-
-        self.routes['/'] = function(req, res) {
-            res.setHeader('Content-Type', 'text/html');
-            res.send(self.cache_get('index.html') );
+        self.routes = {
+          '/': function(req, res) {
+              res.setHeader('Content-Type', 'text/html');
+              res.send(self.cache_get('index.html') );
+          },
+          '/.well-known/web-profile': function(req, res) {
+              res.setHeader('Content-Type', 'text/html');
+              res.send(self.cache_get('.well-known/web-profile.html') );
+          }
         };
     };
 
@@ -156,4 +155,3 @@ var SampleApp = function() {
 var zapp = new SampleApp();
 zapp.initialize();
 zapp.start();
-
