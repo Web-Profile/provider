@@ -5286,11 +5286,7 @@ var HANDJS = HANDJS || {};
       if (typeof target[method] === 'function'){
         target[method]();
       }
-      if (event) xtag.fireEvent(target, event, {
-        detail: {
-          actionTarget: this
-        }
-      });
+      if (event) xtag.fireEvent(target, event);
     });
   }
 
@@ -5347,6 +5343,36 @@ var HANDJS = HANDJS || {};
   });
 
 })();
+
+xtag.mixins.value = {
+  lifecycle: {
+    created: function(){
+      if (!this.xtag.input) this.xtag.input = this.querySelector('input');
+    }
+  },
+  methods: {
+    isValid: function(){
+      return this.xtag.validationRegex ? this.xtag.validationRegex.test(this.value) : true;
+    }
+  },    
+  accessors: {
+    value: {
+      attribute: {},
+      get: function(){
+        return this.xtag.input.value || '';
+      },
+      set: function(value){
+        this.xtag.input.value = value;
+      }
+    },
+    validate: {
+      attribute: {},
+      set: function(value){
+        this.xtag.validationRegex = new RegExp(value);
+      }
+    }
+  }
+};
 
 (function(){
   var matchNum = /[1-9]/,
@@ -5434,477 +5460,6 @@ var HANDJS = HANDJS || {};
     }
   }
 })();
-
-(function(){
-
-  var sides = {
-        next: ['nextElementSibling', 'firstElementChild'],
-        previous: ['previousElementSibling', 'lastElementChild']
-      };
-
-  function indexOfCard(deck, card){
-    return Array.prototype.indexOf.call(deck.children, card);
-  }
-
-  function getCard(deck, item){
-    return item && item.nodeName ? item : isNaN(item) ? xtag.queryChildren(deck, item) : deck.children[item];
-  }
-
-  function checkCard(deck, card, selected){
-    return card &&
-           (selected ? card == deck.xtag.selected : card != deck.xtag.selected) &&
-           deck == card.parentNode &&
-           card.nodeName.toLowerCase() == 'x-card';
-  }
-
-  function shuffle(deck, side, direction){
-    var getters = sides[side];
-    var selected = deck.xtag.selected && deck.xtag.selected[getters[0]];
-    if (selected) {
-      deck.showCard(selected, direction);
-    } else if (deck.loop || deck.selectedIndex == -1) {
-      deck.showCard(deck[getters[1]], direction);
-    }
-  }
-
-  xtag.register('x-deck', {
-    events: {
-      'reveal:delegate(x-card)': function (e){
-        if (this.parentNode == e.currentTarget) {
-          e.currentTarget.showCard(this);
-        }
-      }
-    },
-    accessors: {
-      loop: {
-        attribute: { boolean: true }
-      },
-      cards: {
-        get: function(){
-          return xtag.queryChildren(this, 'x-card');
-        }
-      },
-      selectedCard: {
-        get: function(){
-          return this.xtag.selected || null;
-        },
-        set: function(card){
-          this.showCard(card);
-        }
-      },
-      selectedIndex: {
-        attribute: {
-          name: 'selected-index',
-          validate: function(value){
-            return value | '0';
-          }
-        },
-        get: function(){
-            return this.hasAttribute('selected-index') ? this.getAttribute('selected-index') | 0 : -1;
-        },
-        set: function(value){
-          var card = this.cards[value];
-          if (card) {
-            if (card != this.xtag.selected) {
-              this.showCard(card);
-            }
-          }
-          else if (this.xtag.selected) {
-            this.hideCard(this.xtag.selected);
-          }
-        }
-      },
-      transitionType: {
-        attribute: { name: 'transition-type' }
-      }
-    },
-    methods: {
-      nextCard: function(direction){
-        shuffle(this, 'next', direction);
-      },
-      previousCard: function(direction){
-        shuffle(this, 'previous', direction);
-      },
-      showCard: function(item, direction){
-        var card = getCard(this, item);
-        if (checkCard(this, card, false)) {
-          var selected = this.xtag.selected,
-              nextIndex = indexOfCard(this, card);
-          direction = direction || card.transitionDirection || (nextIndex > indexOfCard(this, selected) ? 'forward' : 'reverse');
-          if (selected) {
-            this.hideCard(selected, direction);
-          }
-          this.xtag.selected = card;
-          this.selectedIndex = nextIndex;
-          if (!card.hasAttribute('selected')) {
-            card.selected = true;
-          }
-          xtag.transition(card, 'show', {
-            before: function(){
-              card.setAttribute('show', '');
-              card.setAttribute('transition-direction', direction);
-            },
-            after: function(){
-              xtag.fireEvent(card, 'show');
-            }
-          });
-        }
-      },
-      hideCard: function(item, direction){
-        var card = getCard(this, item);
-        if (checkCard(this, card, true)) {
-          this.xtag.selected = null;
-          if (card.hasAttribute('selected')) {
-            card.selected = false;
-          }
-          xtag.transition(card, 'hide', {
-            before: function(){
-              card.removeAttribute('show');
-              card.setAttribute('hide', '');
-              card.setAttribute('transition-direction', direction || 'reverse');
-            },
-            after: function(){
-              card.removeAttribute('hide');
-              card.removeAttribute('transition');
-              card.removeAttribute('transition-direction');
-              xtag.fireEvent(card, 'hide');
-            }
-          });
-        }
-      }
-    }
-  });
-
-  xtag.register('x-card', {
-    lifecycle: {
-      inserted: function (){
-        var deck = this.parentNode;
-        if (deck.nodeName.toLowerCase() == 'x-deck') {
-          this.xtag.deck = deck;
-          if (this != deck.selected && this.selected) {
-            deck.showCard(this);
-          }
-        }
-      },
-      removed: function (){
-        var deck = this.xtag.deck;
-        if (deck) {
-          if (this == deck.xtag.selected) {
-            deck.xtag.selected = null;
-            deck.removeAttribute('selected-index');
-          } else {
-            deck.showCard(deck.selectedCard);
-          }
-          this.xtag.deck = null;
-        }
-      }
-    },
-    accessors: {
-      transitionType: {
-        attribute: {}
-      },
-      transitionDirection: {
-        attribute: {}
-      },
-      selected: {
-        attribute: { boolean: true },
-        set: function (val){
-          var deck = this.xtag.deck;
-          if (deck) {
-            if (val && this != deck.selected) {
-              deck.showCard(this);
-            } else if (!val && this == deck.selected) {
-              deck.hideCard(this);
-            }
-          }
-        }
-      }
-    }
-  });
-
-})();
-
-(function() {
-
-  xtag.register('x-flipbox', {
-    lifecycle: {
-      created: function () {
-          // instantiate sides without initial flip animation
-          if (this.firstElementChild) {
-            xtag.skipTransition(this.firstElementChild, function () {});
-          }
-          if (this.lastElementChild) {
-            xtag.skipTransition(this.lastElementChild, function () {});
-          }
-          if (!this.hasAttribute("direction")) {
-            this.xtag._direction = "right";
-          }
-      }
-    },
-    events: {
-      // only listen to one side of flipbox to prevent double firing of flipend
-      'transitionend:delegate(x-flipbox > *:first-child)': function(e) {
-          // because we can't use the descendent selector of > at the front of
-          // our delegation, make sure this is the correct top-level element
-          var flipBox = e.currentTarget;
-          if (this.parentNode == flipBox) {
-            xtag.fireEvent(flipBox, "flipend");
-          }
-      }
-    },
-    accessors: {
-      direction: {
-        attribute: {},
-        get: function () {
-          return this.xtag._direction;
-        },
-        set: function (value) {
-          // set animation direction attribute and skip any transition
-          var self = this;
-          xtag.skipTransition(this.firstElementChild, function () {
-            self.setAttribute('_anim-direction', value);
-            return function () {};
-          });
-          xtag.skipTransition(this.lastElementChild, function () {
-            self.setAttribute('_anim-direction', value);
-          });
-          this.xtag._direction = value;
-        }
-      },
-      flipped: {
-        attribute: { boolean: true }
-      }
-    },
-    methods: {
-      toggle: function () {
-        this.flipped = !this.flipped;
-      },
-      "showFront": function () {
-        this.flipped = false;
-      },
-      "showBack": function () {
-        this.flipped = true;
-      }
-    }
-  });
-
-})();
-
-(function(){
-
-  var libraries = '';
-  var loading = false;
-  function createScript(){
-    loading = true;
-    var params = '';
-    var meta = document.querySelector('meta[name="x-gmap-settings"]');
-    if (meta) {
-      if (meta.hasAttribute('key')) params += '&key=' + meta.getAttribute('key');
-      if (meta.hasAttribute('version')) params += '&v=' + meta.getAttribute('version');
-      if (meta.hasAttribute('libraries')) params += '&libraries=' + (libraries = meta.getAttribute('libraries'));
-    }
-    var script = document.createElement('script');
-    script.async = true;
-    script.src = 'https://maps.googleapis.com/maps/api/js?callback=HTMLXGmapElement.initializeMaps' + params;
-    document.body.appendChild(script);
-  };
-
-  function initialize(node){
-    node.xtag.overlays = {
-      markers: [],
-      polylines: []
-    };
-    var map = node.xtag.map = new maps.Map(node, {
-      zoom: node.zoom,
-      center: { lat: node.lat, lng: node.lng  },
-      disableDefaultUI: !node.defaultUI,
-    });
-    map._node = node;
-    if (libraries.indexOf('places') > -1) {
-      node.xtag.places = new maps.places.PlacesService(map);
-      node.xtag.autocomplete = new maps.places.AutocompleteService();
-    }
-    node.xtag.directions = {
-      service: new maps.DirectionsService(),
-      renderer: new maps.DirectionsRenderer({
-        markerOptions: {
-          icon: node.markerIcon || null
-        }
-      })
-    };
-    node.xtag.directions.renderer.setMap(map);
-    node.xtag.ready = true;
-    xtag.fireEvent(node, 'gmapready');
-  };
-
-  HTMLXGmapElement = xtag.register('x-gmap', {
-    lifecycle: {
-      created: function() {
-        loaded ? initialize(this) : !loading ? createScript() : null;
-      }
-    },
-    accessors: {
-      defaultUI: {
-        attribute: { name: 'default-ui', boolean: true }
-      },
-      markerIcon: {
-        attribute: {}
-      },
-      polylineColor: {
-        attribute: {}
-      },
-      lat: {
-        attribute: {
-          validate: function(coord){
-            return 1 * coord || -36.974777
-          }
-        },
-        get: function(){
-          return this.getAttribute('lat') || 36.974777;
-        }
-      },
-      lng: {
-        attribute: {
-          validate: function(coord){
-            return 1 * coord || -122.024459
-          }
-        },
-        get: function(){
-          return this.getAttribute('lng') || -122.024459;
-        }
-      },
-      overlays: {
-        get: function(){
-          return this.xtag.overlays;
-        }
-      },
-      zoom: {
-        attribute: {
-          validate: function(coord){
-            return 1 * coord || 11;
-          }
-        },
-        get: function(){
-          return this.getAttribute('zoom') || 11;
-        },
-        set: function(num){
-          if (node.xtag.ready) this.xtag.map.setZoom(num);
-        }
-      }
-    },
-    methods: {
-      resize: function(){
-        maps.event.trigger(this.xtag.map, 'resize');
-      },
-      getPlaces: function(obj){
-        this.xtag.places.textSearch(obj, function(response, status) {
-          if (status != maps.places.PlacesServiceStatus.OK) {
-            console.error(status);
-            if (obj.onError) obj.onError(response, status);
-          }
-          else {
-            if (obj.onSuccess) obj.onSuccess(response, status);
-          }
-        });
-      },
-      getDetails: function(request, fn){
-        request = request || {
-          placeId: 'ChIJN1t_tDeuEmsRUsoyG83frY4'
-        };
-        this.xtag.places.getDetails(request, fn || function(place, status) {
-          if (status == maps.places.PlacesServiceStatus.OK) {
-            createMarker(place);
-          }
-        });
-      },
-      getDirections: function(obj){
-        var node = this,
-            firstPoint = obj.waypoints.shift(),
-            request = {
-              origin: firstPoint.location,
-              destination: obj.waypoints.length ? obj.waypoints.pop().location : firstPoint.location,
-              waypoints: obj.waypoints,
-              optimizeWaypoints: !!obj.optimize,
-              travelMode: google.maps.TravelMode[(obj.mode || 'DRIVING').toUpperCase()]
-            }
-        this.xtag.directions.service.route(request, function(response, status) {
-          if (status != maps.DirectionsStatus.OK) {
-            console.error(status);
-            if (obj.onError) obj.onError(response, status);
-          }
-          else {
-            if (obj.onSuccess) obj.onSuccess(response, status);
-            if (obj.display) {
-              node.xtag.directions.renderer.setDirections(response);
-            }
-          }
-        });
-      }
-    }
-  });
-
-  var maps;
-  var loaded = false;
-
-  function removeOverlay(method, item){
-    var items = item._node.xtag.overlays[method];
-    items.splice(items.indexOf(item), 1);
-  }
-
-  HTMLXGmapElement.initializeMaps = function(){
-    xtag.fireEvent(document, 'gmapsapiloaded');
-    maps = google.maps;
-    ['Marker', 'Polyline'].forEach(function(method){
-      var _method = method.toLowerCase() + 's';
-      var setMap = maps[method].prototype.setMap;
-      maps[method].prototype.setMap = function(map){
-        if (map && map._node && !~map._node.xtag.overlays[_method].indexOf(this)) {
-          if (this._node) removeOverlay(_method, this);
-          this._node = map._node;
-          map._node.xtag.overlays[_method].push(this);
-        }
-        else if (!map && this._node) removeOverlay(_method, this);
-        return setMap.apply(this, arguments);
-      };
-    });
-    xtag.query(document, 'x-gmap').forEach(initialize);
-    loaded = true;
-    loading = false;
-    HTMLXGmapElement.ready = true;
-    xtag.fireEvent(document, 'gmapsready');
-  }
-
-})();
-
-xtag.mixins.value = {
-  lifecycle: {
-    created: function(){
-      if (!this.xtag.input) this.xtag.input = this.querySelector('input');
-    }
-  },
-  methods: {
-    isValid: function(){
-      return this.xtag.validationRegex ? this.xtag.validationRegex.test(this.value) : true;
-    }
-  },
-  accessors: {
-    value: {
-      attribute: {},
-      get: function(){
-        return this.xtag.input.value || '';
-      },
-      set: function(value){
-        this.xtag.input.value = value;
-      }
-    },
-    validate: {
-      attribute: {},
-      set: function(value){
-        this.xtag.validationRegex = new RegExp(value);
-      }
-    }
-  }
-};
 
 (function(){
 
@@ -6257,7 +5812,7 @@ xtag.mixins.value = {
     },
     accessors: {
       overlay: {
-        attribute: {boolean: true},
+        attribute: {boolean: true},        
       },
       escapeHide: {
         attribute: {
@@ -6292,7 +5847,7 @@ xtag.mixins.value = {
 })();
 
 (function(){
-
+  
   xtag.register('x-notify', {
     lifecycle: {
       inserted: function(){
@@ -6302,7 +5857,7 @@ xtag.mixins.value = {
         if (!xtag.queryChildren(this.parentNode, 'x-notify')[0]) this.parentNode.removeAttribute('x-notify-parentnode');
       }
     },
-    events: {
+    events: { 
       'tap:delegate([closable])': function(e){
         if (e.target == e.currentTarget) e.currentTarget.hide();
       }
@@ -6321,7 +5876,7 @@ xtag.mixins.value = {
           return val || 3000;
         }}
       }
-    },
+    }, 
     methods: {
       'show:transition': function(){
         if (!this.showing) this.showing = true;
@@ -6340,68 +5895,20 @@ xtag.mixins.value = {
 
 })();
 
-(function(){
-
-  var events = {},
-      elements = {},
-      observers = {};
-
-  function outerNodes(element, event){
-    var type = event.type,
-        el = elements[type] || (elements[type] = []),
-        ev = events[type] || (events[type] = []),
-        i = el.indexOf(element);
-    if (i == -1) {
-      el.push(element);
-      ev.push(event);
-    }
-    else {
-      el.splice(i, 1);
-      ev.splice(i, 1);
-    }
-    return el;
-  }
-
-  xtag.pseudos.outer = {
-    action: function(pseudo, e){
-      if (this == e.target || this.contains && this.contains(e.target)) return null;
-    },
-    onRemove: function(pseudo){
-      if (!outerNodes(this, pseudo.source).length) {
-        xtag.removeEvent(document, observers[pseudo.source.type]);
-      }
-    },
-    onAdd: function(pseudo){
-      outerNodes(this, pseudo.source);
-      var element = this,
-          type = pseudo.source.type;
-      if (!observers[type]) {
-        observers[type] = xtag.addEvent(document, type, function(e){
-          elements[type].forEach(function(node, i){
-            if (node == e.target || node.contains(e.target)) return;
-            events[type][i].stack.call(node, e);
-          });
-        });
-      }
-    }
-  };
-
-})();
-
-(function(){
+(function(){  
   var queue = [],
       requested = false,
       fire = function(){
         var i = queue.length;
         while (i--) {
-          queue[i].apply ?
-          queue[i].apply(queue[i].__debounce__[0], queue[i].__debounce__[1]) :
+          queue[i].apply ? 
+          queue[i].apply(queue[i].__debounce__[0], queue[i].__debounce__[1]) : 
           queue[i][0].apply(queue[i][1], queue[i][2]);
         }
         queue = [];
         requested = false;
       };
-
+  
   xtag.pseudos.queue = {
     onCompiled: function(fn, pseudo){
       return function(){
@@ -6496,12 +6003,12 @@ xtag.mixins.value = {
 
 })();
 
-(function(){
-
+(function(){  
+  
   var rules = {};
   var sheet = document.head.appendChild(document.createElement('style')).sheet;
-
-  function selectTab(tabbox, tab){
+  
+  function selectTab(tabbox, tab){ 
     xtag.queryChildren(tabbox, 'menu > [selected], ul > [selected]').forEach(function(node){
       node.removeAttribute('selected');
     });
@@ -6520,7 +6027,7 @@ xtag.mixins.value = {
   function selectEvent(e){
     if (this.parentNode && this.parentNode.parentNode == e.currentTarget) selectTab(e.currentTarget, this);
   };
-
+  
   function createAccessor(selector){
     return {
       get: function(){
@@ -6528,7 +6035,7 @@ xtag.mixins.value = {
       }
     }
   };
-
+  
   xtag.register('x-tabbox', {
     events: {
       'tap:delegate(menu > *)': selectEvent,
@@ -6544,7 +6051,7 @@ xtag.mixins.value = {
         get: function(){
           return xtag.queryChildren(this, 'ul');
         }
-      },
+      }, 
       selectedIndex: {
         attribute: {
           validate: function(val){
@@ -6558,249 +6065,8 @@ xtag.mixins.value = {
         }
       },
       selectedTab: createAccessor('menu > [selected]'),
-      selectedPanel: createAccessor('ul > [selected]')
+      selectedPanel: createAccessor('ul > [selected]') 
     }
   });
-
-})();
-
-(function () {
-  /** setScope: DOM element
-
-  Given an x-toggle element:
-  - autoupdates the xtag.scope property of the toggle with the current form
-    it is in, if any;
-  - Otherwise set scope as the current document and add a 'x-toggle-no-form'
-    attribute, if a document exists
-  - Otherwise set as null
-  **/
-  function setScope(toggle) {
-    var form = toggle.xtag.input.form;
-    if (form) toggle.removeAttribute('x-toggle-no-form');
-    else toggle.setAttribute('x-toggle-no-form', '');
-    toggle.xtag.scope = (toggle.parentNode) ? (form || document) : null;
-  }
-
-  /** updateScope: DOM element
-
-  given a scope (ie: a form or the document), searches for all toggles belonging
-  to the scope and updates their checkbox/radio type
-  **/
-  function updateScope(scope) {
-    var names = {};
-    // specify a special no-form selector if scope is document to prevent
-    // looking into toggles belonging to a child form
-    var docSelector = (scope == document) ? '[x-toggle-no-form]' : '';
-    // search the scope for the named toggles belonging to it
-    xtag.query(scope, 'x-toggle[name]' + docSelector).forEach(function (toggle) {
-      var name = toggle.name;
-      if (name && !names[name]) {
-        // update the checkbox/radio type of all toggles with the same name
-        var named = xtag.query(scope, 'x-toggle[name="'+name +'"]'+docSelector);
-        var type = named.length > 1 ? 'radio' : 'checkbox';
-        named.forEach(function (toggle) {
-          if (toggle.xtag && toggle.xtag.input) {
-            toggle.type = type;
-          }
-        });
-        // cache the name to prevent repeating update for same named toggles
-        names[name] = true;
-      }
-    });
-  }
-
-  function toggleGroup(toggle){
-      if (shifted && toggle.group && toggle.type != 'radio') {
-        var toggles = toggle.groupToggles;
-        var selector = 'x-toggle[group="' + toggle.group + '"][active]';
-        var active = toggle.xtag.scope.querySelector(selector);
-        if (active && toggle != active) {
-          toggle.checked = active.checked;
-          var state = active.checked;
-          var index = toggles.indexOf(toggle);
-          var activeIndex = toggles.indexOf(active);
-          var minIndex = Math.min(index, activeIndex);
-          var maxIndex = Math.max(index, activeIndex);
-          toggles.slice(minIndex, maxIndex + 1).forEach(function(toggle){
-            if (toggle != active) toggle.checked = state;
-          });
-          return true;
-        }
-      }
-  }
-
-  function activateToggle(toggle){
-    if (inTogglebar(toggle)) return;
-    toggle.groupToggles.forEach(function (node) {
-      node.active = false;
-    });
-    toggle.active = true;
-  }
-
-  function inTogglebar(toggle){
-    return toggle.parentNode && toggle.parentNode.nodeName.toLowerCase() == 'x-togglebar';
-  }
-
-  var shifted = false;
-  xtag.addEvents(document, {
-    'DOMComponentsLoaded': function () {
-      updateScope(document);
-      xtag.toArray(document.forms).forEach(updateScope);
-    },
-    'WebComponentsReady': function () {
-      updateScope(document);
-      xtag.toArray(document.forms).forEach(updateScope);
-    },
-    'keydown': function (e) {
-      shifted = e.shiftKey;
-    },
-    'keyup': function (e) {
-      shifted = e.shiftKey;
-    },
-    'focus:delegate(x-toggle)': function (e) {
-      this.focus = true;
-      this.xtag.input.focus();
-    },
-    'blur:delegate(x-toggle)': function (e) {
-      this.focus = false;
-    },
-    'tap:delegate(x-toggle)': function (e) {
-      var input = this.xtag.input;
-      if (input.type == 'radio' ? !this.checked : true) {
-        input.checked = !input.checked;
-        var change = document.createEvent('Event');
-        change.initEvent('change', true, false);
-        input.dispatchEvent(change);
-      }
-      input.focus();
-    },
-    'change:delegate(x-toggle)': function (e) {
-      // manage the active state of any group toggles
-      this.xtag.input.focus();
-      if (inTogglebar(this) || (!toggleGroup(this) && this.type != 'radio')) this.checked = this.xtag.input.checked;
-      activateToggle(this);
-    }
-  });
-
-  var template = xtag.createFragment('<input /><div class="x-toggle-check"></div>');
-
-  xtag.register('x-toggle', {
-    lifecycle: {
-      created: function () {
-        this.appendChild(template.cloneNode(true));
-        this.xtag.input = this.querySelector('input');
-        this.xtag.checkEl = this.querySelector(".x-toggle-check");
-        this.type = 'checkbox';
-        setScope(this);
-
-        var name = this.getAttribute('name');
-        if (name) {
-          this.xtag.input.name = this.getAttribute('name');
-        }
-        if (this.hasAttribute('checked')) {
-          this.checked = true;
-        }
-      },
-      inserted: function () {
-        setScope(this);
-        if (this.name) {
-          updateScope(this.xtag.scope);
-        }
-      },
-      removed: function () {
-        updateScope(this.xtag.scope);
-        setScope(this);
-      }
-    },
-    accessors: {
-      noBox: {
-        attribute: {
-          name: 'no-box',
-          boolean: true
-        }
-      },
-      type: {
-        attribute: {},
-        set: function (type) {
-          this.xtag.input.type = type;
-        }
-      },
-      label: { attribute: {} },
-      focus: { attribute: { boolean: true } },
-      active: { attribute: { boolean: true } },
-      group: { attribute: {} },
-      groupToggles: {
-        get: function () {
-          return xtag.query(this.xtag.scope, 'x-toggle[group="' + this.group + '"]');
-        }
-      },
-      name: {
-        attribute: {},
-        set: function (name) {
-          if (name === null) this.type = 'checkbox';
-          this.xtag.input.name = name;
-          updateScope(this.xtag.scope);
-        }
-      },
-      checked: {
-        get: function () {
-          return this.xtag.input.checked;
-        },
-        set: function (value) {
-          var name = this.name,
-              state = (value === 'true' || value === true);
-          if (name) {
-            var scopeSelector = (this.xtag.scope == document) ?
-                                '[x-toggle-no-form]' : '';
-            var selector = 'x-toggle[checked][name="'+name+'"]' + scopeSelector;
-            // get previously checked toggle and untoggle it
-            var previous = this.xtag.scope.querySelector(selector);
-            if (previous) {
-              previous.removeAttribute('checked');
-            }
-          }
-          this.xtag.input.checked = state;
-          if (state) {
-            this.setAttribute('checked', '');
-          } else {
-            this.removeAttribute('checked');
-          }
-        }
-      },
-      value: {
-        attribute: {},
-        get: function () {
-          return this.xtag.input.value;
-        },
-        set: function (value) {
-          this.xtag.input.value = value;
-        }
-      }
-    }
-  });
-
-  function updateActiveValues(togglebar){
-    togglebar.activeValues = xtag.query(togglebar, 'input:checked').map(function(node){
-      if (node.hasAttribute('value')) return node.value;
-    }).join(', ');
-  }
-
-  xtag.register('x-togglebar', {
-    lifecycle: {
-      created: function(){
-        updateActiveValues(this);
-      }
-    },
-    accessors: {
-      activeValues: {
-        attribute: { name: 'active-values' }
-      }
-    },
-    events: {
-      change: function(e){
-        updateActiveValues(this);
-      }
-    }
-  });
-
+  
 })();

@@ -1,0 +1,29 @@
+{
+  "name": "Action",
+  "description": "Declarative way to execute a method on target custom elements",
+  "version": "0.0.4",
+  "author": "Arron Schaar",
+  "keywords": [
+    "Element",
+    "web-components",
+    "x-tag"
+  ],
+  "main": [
+    "src/action.js",
+    "src/action.css",
+    "src/action.styl"
+  ],
+  "dependencies": {
+    "x-tag-core": "*"
+  },
+  "homepage": "https://github.com/x-tag/action",
+  "_release": "0.0.4",
+  "_resolution": {
+    "type": "version",
+    "tag": "0.0.4",
+    "commit": "0e887473f20878ac2d1b813e335f57f484a7c986"
+  },
+  "_source": "git://github.com/x-tag/action.git",
+  "_target": "*",
+  "_originalSource": "x-tag-action"
+}

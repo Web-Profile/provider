@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <title>Stub Demo - X-Tag</title>
+  <link rel="stylesheet" type="text/css" href="x-tag-components.css"/>
+	<link rel="stylesheet" type="text/css" href="../src/main.css"/>
+
+  <script type="text/javascript" src="x-tag-components.js"></script>
+  <script type="text/javascript" src="../src/main.js"></script>
+
+	<style>
+
+    body {
+      margin: 1.5em;
+    }
+
+    x-rating {
+      margin: 0 0 1.5em;
+    }
+
+    #value_attr:before {
+      content: attr(rating);
+      min-width: 2em;
+    }
+
+	</style>
+
+</head>
+
+<body>
+
+	<x-rating style="width: 100%; max-width: 250px;" value="0" step="10"></x-rating>
+  <x-rating style="width: 50%; max-width: 200px;" step="2" items="4" id="value_attr" value="2"></x-rating>
+
+</body>
+
+</html>

@@ -1,0 +1,24 @@
+{
+  "name": "Web Profile",
+  "description": "",
+  "version": "0.1.0",
+  "main": [
+    "src/main.js",
+    "src/main.css"
+  ],
+  "dependencies": {
+    "es6-promise": "*",
+    "fetch": "*",
+    "x-tag-core": "*",
+    "x-tag-pseudo-queue": "*",
+    "x-tag-layout": "*",
+    "x-tag-appbar": "*",
+    "x-tag-modal": "*",
+    "x-tag-tabbox": "*",
+    "x-tag-action": "*",
+    "x-tag-input": "*",
+    "x-tag-spinner": "*",
+    "x-tag-rating": "*",
+    "x-tag-notify": "*"
+  }
+}

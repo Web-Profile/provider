@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8" />
+		
+		<title>X-Input Demo - X-Tag</title>
+		
+		<link rel="stylesheet" type="text/css" href="x-tag-components.css"/>
+		<link rel="stylesheet" type="text/css" href="../src/input.css"/>		
+		
+		<script type="text/javascript" src="x-tag-components.js"></script>
+		<script type="text/javascript" src="../src/input.js"></script> 
+		
+		<style type="text/css">
+			
+			body {
+				padding: 50px;
+				background: #eee;
+			}
+			
+		</style>
+	</head>
+
+<body>
+
+	<label for="foo">Foo Input</label>
+	<x-input id="test" name="foo" validate="^ *(\S *){3,}$" autocomplete autofocus autospin>
+		<button>add</button>
+	</x-input>
+	
+</body>
+
+<script type="text/javascript">
+
+	document.addEventListener('DOMComponentsLoaded', function(){
+		
+		
+		
+	}, false);
+
+</script>
+
+</html>

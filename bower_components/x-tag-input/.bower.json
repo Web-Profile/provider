@@ -1,0 +1,28 @@
+{
+  "name": "Input",
+  "description": "",
+  "version": "0.2.10",
+  "keywords": [
+    "web-components",
+    "x-tag"
+  ],
+  "main": [
+    "src/input.js",
+    "src/input.css"
+  ],
+  "dependencies": {
+    "x-tag-core": "*",
+    "x-tag-mixin-value": "*",
+    "x-tag-spinner": "*"
+  },
+  "homepage": "https://github.com/x-tag/input",
+  "_release": "0.2.10",
+  "_resolution": {
+    "type": "version",
+    "tag": "0.2.10",
+    "commit": "982faec1bdd082ce7eb21de2e4cc572d559a0960"
+  },
+  "_source": "git://github.com/x-tag/input.git",
+  "_target": "*",
+  "_originalSource": "x-tag-input"
+}
