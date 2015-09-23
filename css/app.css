@@ -1,0 +1,51 @@
+
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  font-family: Arial;
+}
+
+body > header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 1em;
+  background: rgba(255,255,255,0.9);
+  box-shadow: 0 1px 3px -2px rgba(0,0,0,0.7);
+  z-index: 3;
+}
+
+x-tabbox {
+    height: 100%;
+}
+
+x-tabbox > ul {
+  box-shadow: 0 1px 3px -2px rgba(0,0,0,0.7);
+  z-index: 2;
+}
+
+x-tabbox > ul > li {
+  padding-top: 4em;
+}
+
+x-tabbox > menu > button {
+    padding: 1em;
+    font-size: 1em;
+    font-weight: bold;
+}
+
+x-tabbox > menu > [selected] {
+    background: #00a1f1;
+    color: #fff;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
+}
+
+#profile_input {
+  margin: 1em;
+}
