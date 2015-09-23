@@ -11,19 +11,28 @@ body {
 }
 
 svg {
-  font-size: 3em;
+  font-size: 2em;
   height: 1em;
 }
 
-button {
+[svg-button] {
   font-size: inherit;
   font-weight: inherit;
+  margin: 0;
+  padding: 0.44em 0.44em 0.4em 0;
+  color: #000;
+  background: none;
+  cursor: pointer;
 }
 
-button svg {
-  display: block;
-  width: 1.1em;
+[svg-button] svg {
+  display: inline-block;
+  width: 1em;
   margin: 0px auto;
+}
+
+[svg-button] {
+  line-height: 0em;
 }
 
 body > header {
