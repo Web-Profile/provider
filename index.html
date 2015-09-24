@@ -8,6 +8,8 @@
 
     <link href="css/x-tag-components.css" rel="stylesheet" />
     <script src="js/x-tag-components.js"></script>
+
+    <link href="css/prism.css" rel="stylesheet" />
     <link href="css/app.css" rel="stylesheet" />
 
 </head>
@@ -61,26 +63,26 @@
     </defs>
   </svg>
 
-  <header>
-    <span>View Profile: <select id="editor_select"></select></span>
-    <button svg-button id="add_profile_button">
+  <x-appbar>
+    <h3>Profile: <button svg-button id="active_profile" class="select-profile"></button></h3>
+    <button svg-button class="add-profile">
       <svg><use xlink:href="#plus"></use></svg>
-      <span>Link Profile</span>
+      <span>Add Profile</span>
     </button>
-    <button svg-button id="register_handler">
+    <button svg-button class="add-handler">
       <svg><use xlink:href="#shake"></use></svg>
       <span>Add Handler</span>
     </button>
-  </header>
+  </x-appbar>
 
   <x-tabbox tab-position="bottom" selected-index="0">
     <menu>
-      <button>Linked Apps & Devices</button>
       <button>Profile Editor</button>
+      <button>Linked Apps & Devices</button>
     </menu>
     <ul>
       <li id="editor">
-        <select id="editor_select"></select>
+        <pre><code id="profile_printout" class="language-javascript"></code></pre>
       </li>
       <li id="entities">
         Bar
@@ -88,21 +90,45 @@
     </ul>
   </x-tabbox>
 
-  <x-modal id="add_profile_modal">
+  <x-modal id="manage_profile_modal"  transition overlay overlay-tap-hide hidden>
     <x-layout>
       <header>
         <x-appbar>
-          <h2>Add a Profile</h2>
+          <h2>Manage Profiles</h2>
         </x-appbar>
       </header>
       <section>
-        <x-input id="add_profile_input"><button>Add Profile</button></x-input>
+        <x-tabbox selected-index="0" tab-position="bottom" transition>
+          <menu>
+            <button>My Profiles</button>
+            <button>Add a Profile</button>
+          </menu>
+          <ul>
+            <li id="profile_list"></li>
+            <li>
+              <x-input id="add_profile_input" placeholder="Enter a Blockchain ID">
+                <button>Add</button>
+              </x-input>
+              <p>
+                In order to modify profile data, or use a profile to authenticate
+                with apps, you need to connect a valid key to each profile. Profiles
+                that have not yet been connected to keys will have a "!" icon next
+                to them in the "My Profiles" list - click it to upload your key.
+              </p>
+            </li>
+          </ul>
+        </x-tabbox>
       </section>
     </x-layout>
   </x-modal>
 
+  <x-notify id="notifier" closable></x-notify>
+
 </body>
 
+<script src="https://rawgit.com/Web-Profile/prollyfills/master/web.js"></script>
+<script src="js/dexie.min.js"></script>
+<script src="js/prism.js"></script>
 <script src="js/app.js"></script>
 
 </html>

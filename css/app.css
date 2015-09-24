@@ -10,19 +10,30 @@ body {
   font-family: Arial;
 }
 
+ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
 svg {
   font-size: 2em;
   height: 1em;
 }
+button {
+  margin: 0;
+  padding: 0;
+}
 
 [svg-button] {
-  font-size: inherit;
-  font-weight: inherit;
-  margin: 0;
-  padding: 0.44em 0.44em 0.4em 0;
   color: #000;
+  border: none;
   background: none;
   cursor: pointer;
+}
+
+x-appbar > button {
+  line-height: 0em;
 }
 
 [svg-button] svg {
@@ -31,16 +42,79 @@ svg {
   margin: 0px auto;
 }
 
-[svg-button] {
-  line-height: 0em;
+[svg-button] span {
+  vertical-align: text-top;
 }
 
-body > header {
+x-modal {
+  width: 90%;
+  height: 90%;
+  max-width: 600px;
+  max-height: 500px;
+  background: #fff;
+  border-radius: 4px;
+  z-index: 4;
+  -webkit-box-shadow: 0px 2px 8px 2px rgba(0, 0, 0, 0.6);
+  box-shadow: 0px 2px 8px 2px rgba(0, 0, 0, 0.6);
+}
+
+x-modal-overlay {
+  z-index: 3;
+}
+
+
+x-modal-overlay:before {
+  height: 1em;
+  padding: 0.1em;
+}
+
+x-modal > x-layout > header {
+  padding: 0.5em;
+  background: #15992A;
+  color: #fff;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
+}
+
+x-tabbox > ul > li {
+  padding: 1em;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+x-tabbox > menu button {
+  padding: 0.75em 0.5em;
+  color: #555;
+  font-size: 1.1em;
+  font-weight: bold;
+  border-bottom: 1px solid #888;
+  background: #eaeaea;
+}
+
+  x-tabbox[tab-position="bottom"] > menu button {
+    border-bottom: none;
+    border-top: 1px solid rgba(0,0,0,0.3);
+  }
+
+x-tabbox > menu button[selected] {
+  color: #FFF;
+  background: #00a1f1;
+  color: #fff;
+  border-bottom: 1px solid rgba(0,0,0,0.3);
+  text-shadow: 0 1px 0 rgba(0,0,0,0.5);
+}
+
+  x-tabbox[tab-position="bottom"] > menu button[selected] {
+    border-bottom: none;
+    border-top: 1px solid #1A2D39;
+  }
+
+
+body > x-appbar {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  padding: 1em;
   background: rgba(255,255,255,0.9);
   box-shadow: 0 1px 3px -2px rgba(0,0,0,0.7);
   overflow: hidden;
@@ -50,35 +124,100 @@ body > header {
   box-sizing: border-box;
 }
 
+body > x-appbar > h3 {
+  padding: 0.75em;
+  text-align: left;
+}
+
+body > x-appbar > button {
+  margin: 0 0.75em;
+}
+
 #register_handler {
   float: right;
 }
 
-x-tabbox {
+body > x-tabbox {
     height: 100%;
 }
 
-x-tabbox > ul {
+body > x-tabbox > ul {
   box-shadow: 0 1px 3px -2px rgba(0,0,0,0.7);
   z-index: 2;
 }
 
-x-tabbox > ul > li {
-  padding-top: 4em;
+body > x-tabbox > ul > li {
+  padding: 3.25em 1em 1em;
 }
 
-x-tabbox > menu > button {
-    padding: 1em;
-    font-size: 1em;
-    font-weight: bold;
+#active_profile {
+  margin-left: 0.25em;
+  padding: 0.15em 0.5em;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  border-radius: 1em;
 }
 
-x-tabbox > menu > [selected] {
-    background: #00a1f1;
-    color: #fff;
-    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
+#active_profile:before {
+  content: "▼ ";
+}
+
+#active_profile:after {
+  content: "Select a Web Profile";
+}
+
+#active_profile[data-profile]:after {
+  content: attr(data-profile);
 }
 
 #profile_input {
   margin: 1em;
+}
+
+#profile_list label {
+  display: block;
+  padding: 0.5em;
+  border: 1px solid #aaa;
+  border-top: none;
+  background: #fafafa;
+  overflow: hidden;
+}
+
+#profile_list label:first-child {
+  border-top: 1px solid #aaa;
+}
+
+#profile_list label:nth-child(even) {
+  background: #e3e3e3;
+}
+
+#profile_list label input[type="radio"]{
+  margin: 0.5em;
+}
+
+#profile_list label input[type="file"]{
+  float: right;
+
+}
+
+#editor {
+  padding: padding: 3.25em 0em 1em;
+}
+
+#editor > pre {
+  display: inline-block;
+  margin: 0px;
+  background: none;
+  overflow: hidden;
+}
+
+@media all and (max-width: 525px) {
+
+  body > x-appbar > button span {
+    display: none;
+  }
+
+  body > x-appbar > button {
+    margin: 0 0.5em;
+  }
+
 }
