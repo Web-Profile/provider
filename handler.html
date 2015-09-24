@@ -32,8 +32,9 @@
 
 
     (function(){
+      console.log(window.IDBDatabase);
 
-      var db = new Dexie("app");
+      db = new Dexie("app");
 
       db.version(1).stores({
         profiles: '++id,&name,&key,selected',
@@ -56,7 +57,7 @@
       }
 
       window.addEventListener('message', function(event){
-        console.log(event);
+        console.log(event, location.origin);
         var data = JSON.parse(event.data);
         switch (data.action){
           case 'connect':

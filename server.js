@@ -40,8 +40,7 @@ var SampleApp = function() {
     self.populateCache = function() {
         var cache = self.pageCache = self.pageCache || {
           'index.html': '',
-          'handler.html': '',
-          '.well-known/web-profile.html': ''
+          'handler.html': ''
         };
 
         for (var z in cache) {
@@ -100,10 +99,6 @@ var SampleApp = function() {
           '/': function(req, res) {
               res.setHeader('Content-Type', 'text/html');
               res.send(self.cache_get('index.html') );
-          },
-          '/.well-known/web-profile.html': function(req, res) {
-              res.setHeader('Content-Type', 'text/html');
-              res.send(self.cache_get('.well-known/web-profile.html') );
           },
           '/handler.html': function(req, res) {
               res.setHeader('Content-Type', 'text/html');
