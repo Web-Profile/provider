@@ -48,7 +48,7 @@ function showNotifier(obj){
 function createProfileEntry(obj){
   var label = document.createElement('label');
   label.innerHTML = '<input name="profile-entries" type="radio" value="'+ obj.name +'" '+ (obj.selected ? 'checked="checked"' : '') +' />'+ obj.name + (obj.key ? '' : ' <input type="file">');
-  profile_list.appendChild(label);
+  return profile_list.appendChild(label);
 }
 
 function updateSelectedProfile(name, updateDB){
@@ -91,6 +91,7 @@ xtag.addEvents(document, {
   'submitready:delegate(#add_profile_input)': function(event){
     var input = this;
     var name = input.value.trim();
+    console.log(name);
     if (!input.spinning) {
       input.spinning = true;
       db.transaction("r", db.profiles, function () {
@@ -106,7 +107,8 @@ xtag.addEvents(document, {
             navigator.webProfile.getProfile(name).then(function(profile){
               db.transaction("rw", db.profiles, function(){
                 db.profiles.add({name: name, profile: profile});
-                createProfileEntry(name);
+                var node = createProfileEntry({ name: name });
+                if (!profile_list.children.length) node.click();
                 input.spinning = false;
                 manage_profile_tabbox.selectedIndex = 0;
                 console.log(profile);
