@@ -1,35 +1,8 @@
 
-var db = new Dexie("app");
+(function(){
 
-db.version(1).stores({
-  profiles: '++id,&name,&key,selected',
-  sites: '++id,&origin,name'
-});
 
-db.open().then(function(){
-  db.transaction("r", db.profiles, function(){
-
-    db.profiles.each(function(entry) {
-      console.log(entry);
-      var selected = !!entry.selected;
-      if (selected) updateSelectedProfile(entry.name);
-      createProfileEntry({
-        name: entry.name,
-        key: !!entry.key,
-        selected: selected
-      });
-    });
-  });
-}).catch(function(error){
-  console.log(error)
-})
-
-db.on('error', function (error) {
-    // Catch all uncatched DB-related errors and exceptions
-    console.error(error);
-});
-
-/* DOM Interaction */
+/* DOM Assignment */
 
 var notifier = document.getElementById('notifier');
 var active_profile = document.getElementById('active_profile');
@@ -37,6 +10,15 @@ var profile_list = document.getElementById('profile_list');
 var manage_profile_modal = document.getElementById('manage_profile_modal');
 var manage_profile_tabbox = manage_profile_modal.querySelector('x-tabbox');
 var profile_printout = document.getElementById('profile_printout');
+
+/* Local Storage */
+
+loopProfiles(function(name, obj){
+  if (obj.selected) updateSelectedProfile(name);
+  createProfileEntry(obj);
+});
+
+/* Functions */
 
 function showNotifier(obj){
   var node = obj.element || notifier;
@@ -53,26 +35,25 @@ function createProfileEntry(obj){
 }
 
 function updateSelectedProfile(name, updateDB){
+  var profiles = getProfiles();
   active_profile.setAttribute('data-profile', name);
-  db.transaction("r", db.profiles, function(){
-    db.profiles.where('name').equalsIgnoreCase(name).first(function(entry){
-      profile_printout.innerHTML = JSON.stringify(entry.profile, null, 2);
-      Prism.highlightAll();
-    });
-  });
+
+  profile_printout.innerHTML = JSON.stringify(profiles[name].profile, null, 2);
+  Prism.highlightAll();
+
   if (updateDB) {
     var states = {};
     xtag.query(profile_list, 'input[type="radio"]').forEach(function(input){
       states[input.value] = input.checked ? 1 : 0;
     });
-    db.transaction("rw", db.profiles, function(){
-      db.profiles.each(function(entry) {
-        entry.selected = states[entry.name];
-        db.profiles.put(entry);
-      });
-    });
+    loopProfiles(function(name, obj){
+      obj.selected = states[name];
+    }, true);
   }
 }
+
+
+/* Events */
 
 xtag.addEvents(document, {
   'tap:delegate(.select-profile)': function(event){
@@ -95,33 +76,34 @@ xtag.addEvents(document, {
     console.log(name);
     if (!input.spinning) {
       input.spinning = true;
-      db.transaction("r", db.profiles, function () {
-        db.profiles.where('name').equalsIgnoreCase(name).count(function(num) {
-          if (num) {
-            input.spinning = false;
-            showNotifier({
-              type: error,
-              html: 'You have already added the Web Profile: ' + name
-            });
-          }
-          else {
-            navigator.webProfile.getProfile(name).then(function(profile){
-              db.transaction("rw", db.profiles, function(){
-                db.profiles.add({name: name, profile: profile});
-                var node = createProfileEntry({ name: name });
-                if (!profile_list.children.length) node.click();
-                input.spinning = false;
-                manage_profile_tabbox.selectedIndex = 0;
-                console.log(profile);
-              });
-            }).catch(function(e){
-              input.spinning = false;
-              console.log(e);
-            });
-          }
+      var entries = getProfiles();
+      if (entries[name]) {
+        input.spinning = false;
+        showNotifier({
+          type: error,
+          html: 'You have already added the Web Profile: ' + name
         });
-      });
+      }
+      else {
+        navigator.webProfile.getProfile(name).then(function(profile){
+          var obj = { profile: profile };
+          var node = createProfileEntry({ name: name });
+          if (!profile_list.children.length) {
+            obj.selected = true;
+            node.click();
+          }
+          saveProfile(name, obj);
+          input.spinning = false;
+          manage_profile_tabbox.selectedIndex = 0;
+          console.log(profile);
+        }).catch(function(e){
+          input.spinning = false;
+          console.log(e);
+        });
+      }
 
     }
   }
 });
+
+})();

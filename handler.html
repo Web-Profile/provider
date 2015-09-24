@@ -3,7 +3,8 @@
 <head>
     <meta charset="utf-8" />
     <title>Web Profile Handler</title>
-    <script src="../js/dexie.min.js"></script>
+    <script src="../js/lockr.min.js"></script>
+    <script src="../js/helpers.js"></script>
     <script>
 
     /*!
@@ -33,30 +34,6 @@
 
     (function(){
 
-      console.log('origin: ', location);
-
-      console.log('indexedDB: ', window.indexedDB);
-
-      console.log('localStorage: ', window.localStorage);
-
-      db = new Dexie("app");
-
-      db.version(1).stores({
-        profiles: '++id,&name,&key,selected',
-        sites: '++id,&origin,name'
-      });
-
-      db.open().then(function(){
-        console.log(open);
-      }).catch(function(error){
-        console.log(error);
-      })
-
-      db.on('error', function (error) {
-          // Catch all uncatched DB-related errors and exceptions
-          console.error(error);
-      });
-
       function post(event, obj){
         event.source.postMessage(JSON.stringify(obj), '*');
       }
@@ -66,15 +43,11 @@
         var data = JSON.parse(event.data);
         switch (data.action){
           case 'connect':
-          console.log('CONNECT IN FRAME');
-            db.transaction("r", db.profiles, function(){
-              db.profiles.where('name').equalsIgnoreCase(name).count(function(num) {
-                console.log(num + ' ENTRIES FOUND');
-              });
-              db.profiles.where('selected').equals(1).first(function(entry) {
-                console.log('SENDING BACK ENTRY');
-                post(event, { response: entry.name, transaction: data.transaction  });
-              });
+            console.log('CONNECT IN FRAME');
+            loopProfiles(function(name, obj){
+              if (obj.selected) {
+                post(event, { response: name, transaction: data.transaction  });
+              }
             });
           break;
         }
