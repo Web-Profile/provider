@@ -32,7 +32,12 @@
 
 
     (function(){
-      console.log(window.indexedDB);
+
+      console.log('origin: ', location.origin);
+
+      console.log('indexedDB: ', window.indexedDB);
+
+      console.log('localStorage: ', window.localStorage);
 
       db = new Dexie("app");
 
