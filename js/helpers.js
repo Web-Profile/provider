@@ -16,6 +16,7 @@ function saveProfile(name, obj){
   var entries = getProfiles();
   var entry = entries[name] || {};
   if (entry) for (var z in obj) entry[z] = obj[z];
+  entry.name = name;
   entries[name] = entry;
   Lockr.set('profiles', entries);
 }
