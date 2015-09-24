@@ -43,7 +43,9 @@ var SampleApp = function() {
           '.well-known/web-profile.html': ''
         };
 
-        for (var z in cache) cache[z] = fs.readFileSync('./' + z);
+        for (var z in cache) {
+          cache[z] = fs.readFileSync('./' + z);
+        }
     };
 
 
@@ -98,9 +100,13 @@ var SampleApp = function() {
               res.setHeader('Content-Type', 'text/html');
               res.send(self.cache_get('index.html') );
           },
-          '/.well-known/web-profile': function(req, res) {
+          '/.well-known/web-profile.html': function(req, res) {
               res.setHeader('Content-Type', 'text/html');
               res.send(self.cache_get('.well-known/web-profile.html') );
+          },
+          '/handler.html': function(req, res) {
+              res.setHeader('Content-Type', 'text/html');
+              res.send(self.cache_get('handler.html') );
           }
         };
     };

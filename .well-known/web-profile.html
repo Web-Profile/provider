@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <title>Web Profile Handler</title>
-
+    <script src="../js/dexie.min.js"></script>
     <script>
 
     /*!
@@ -33,7 +33,23 @@
 
     (function(){
 
-      var origins = JSON.parse(localStorage.origins || '{}');
+      var db = new Dexie("app");
+
+      db.version(1).stores({
+        profiles: '++id,&name,&key,selected',
+        sites: '++id,&origin,name'
+      });
+
+      db.open().then(function(){
+        console.log(open);
+      }).catch(function(error){
+        console.log(error);
+      })
+
+      db.on('error', function (error) {
+          // Catch all uncatched DB-related errors and exceptions
+          console.error(error);
+      });
 
       function post(event, obj){
         event.source.postMessage(JSON.stringify(obj), '*');
@@ -42,18 +58,18 @@
       window.addEventListener('message', function(event){
 
         var data = JSON.parse(event.data);
-        switch(data.action){
+        switch (data.action){
           case 'connect':
-            var username = origins[event.origin];
-            if (!username) {
-              username = origins[event.origin] = prompt('Which profile would you like to use?');
-              localStorage.origins = JSON.stringify(origins);
-            }
-            console.log('returning username: ' + username);
-            post(event, { response: username, transaction: data.transaction  });
+            db.transaction("r", db.profiles, function(){
+              db.profiles.where('name').equalsIgnoreCase(name).count(function(num) {
+                console.log(num + ' ENTRIES FOUND');
+              });
+              db.profiles.where('selected').equals(1).first(function(entry) {
+                console.log('SENDING BACK ENTRY');
+                post(event, { response: entry.name, transaction: data.transaction  });
+              });
+            });
           break;
-
-
         }
       });
 

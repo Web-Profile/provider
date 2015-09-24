@@ -62,7 +62,7 @@ function updateSelectedProfile(name, updateDB){
   if (updateDB) {
     var states = {};
     xtag.query(profile_list, 'input[type="radio"]').forEach(function(input){
-      states[input.value] = input.checked;
+      states[input.value] = input.checked ? 1 : 0;
     });
     db.transaction("rw", db.profiles, function(){
       db.profiles.each(function(entry) {
@@ -83,7 +83,7 @@ xtag.addEvents(document, {
     manage_profile_modal.show();
   },
   'tap:delegate(.add-handler)': function(event){
-    navigator.webProfile.registerProvider('Web Profile Service');
+    navigator.webProfile.registerProvider('Web Profile Service', location.origin + '/handler.html');
   },
   'change:delegate(#profile_list input[type="radio"])': function(){
     if (this.checked) updateSelectedProfile(this.value, true);
