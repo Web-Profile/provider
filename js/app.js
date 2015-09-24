@@ -8,8 +8,9 @@ db.version(1).stores({
 
 db.open().then(function(){
   db.transaction("r", db.profiles, function(){
-    console.log('DB OPENING TXN');
+
     db.profiles.each(function(entry) {
+      console.log(entry);
       var selected = !!entry.selected;
       if (selected) updateSelectedProfile(entry.name);
       createProfileEntry({
