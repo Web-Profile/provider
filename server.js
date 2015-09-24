@@ -40,6 +40,7 @@ var SampleApp = function() {
     self.populateCache = function() {
         var cache = self.pageCache = self.pageCache || {
           'index.html': '',
+          'handler.html': '',
           '.well-known/web-profile.html': ''
         };
 

@@ -56,10 +56,11 @@
       }
 
       window.addEventListener('message', function(event){
-
+        console.log(event);
         var data = JSON.parse(event.data);
         switch (data.action){
           case 'connect':
+          console.log('CONNECT IN FRAME');
             db.transaction("r", db.profiles, function(){
               db.profiles.where('name').equalsIgnoreCase(name).count(function(num) {
                 console.log(num + ' ENTRIES FOUND');
