@@ -6,7 +6,7 @@
 
     <script src="js/promise.min.js"></script>
     <script src="js/fetch.js"></script>
-    <script src="js/navigator.protocolRequest.js"></script>
+    <script src="js/ProtocolWorker.js"></script>
     <script src="../js/lockr.min.js"></script>
     <script src="../js/helpers.js"></script>
 
@@ -14,13 +14,17 @@
 
     (function(){
 
-      window.addEventListener('protocolrequest', function(message){
-        console.log(message);
-        switch (message.detail.action){
-          case 'connect':
-            loopProfiles(function(name, obj){
-              if (obj.selected) message.detail.respond({ response: name });
-            });
+      window.addEventListener('protocolconnection', function(event){
+        loopProfiles(function(name, obj){
+          if (obj.selected) event.detail.allow({ id: name });
+        });
+      });
+
+      window.addEventListener('protocolrequest', function(event){
+        console.log(event);
+        switch (event.detail.action){
+          case 'set':
+
           break;
         }
       });
