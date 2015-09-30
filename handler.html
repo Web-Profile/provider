@@ -14,18 +14,13 @@
 
     (function(){
 
-      window.addEventListener('protocolconnection', function(event){
-        loopProfiles(function(name, obj){
-          if (obj.selected) event.detail.allow({ id: name });
-        });
-      });
-
       window.addEventListener('protocolrequest', function(event){
-        console.log(event);
-        switch (event.detail.action){
-          case 'set':
-
-          break;
+        switch (event.detail.action) {
+          case 'get:id':
+            loopProfiles(function(name, obj){
+              if (obj.selected) event.detail.respond({ id: name });
+            });
+            break;
         }
       });
 

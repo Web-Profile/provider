@@ -7,8 +7,8 @@
     registerProvider: function(name, uri){
       navigator.registerProtocolHandler('web+profile', uri + '?%s', name);
     },
-    connect: function(){
-      return worker.connect().then(function(response){
+    getID: function(){
+      return worker.request({ action: 'get:id' }).then(function(response){
         navigator.webProfile.id = response.id;
         return response;
       })
