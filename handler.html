@@ -18,7 +18,7 @@
         switch (event.detail.action) {
           case 'get:id':
             loopProfiles(function(name, obj){
-              if (obj.selected) event.detail.respond({ id: name });
+              if (obj.selected) event.detail.resolve({ id: name });
             });
             break;
         }
